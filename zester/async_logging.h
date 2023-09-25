@@ -1,8 +1,8 @@
 /* 异步日志的核心，定义了FixedBuffer和AsyncLogging */
 #ifndef ZEST_COMMON_ASYNC_LOGGING_H
 #define ZEST_COMMON_ASYNC_LOGGING_H
-#include "zest/common/noncopyable.h"
-#include "zest/common/sync.h"
+#include "zester/noncopyable.h"
+#include "zester/sync.h"
 #include <memory>
 #include <vector>
 #include <list>
@@ -55,7 +55,8 @@ class AsyncLogging: public noncopyable
     using BufferVector = std::vector<BufferPtr>;
     using BufferList = std::list<BufferPtr>;
 public:
-    static void InitAsyncLogger();   // 初始化函数，构造AsyncLogging对象，开启后端线程
+    static void InitAsyncLogger(const std::string &file_name, const std::string &file_path, 
+                 int max_file_size, int sync_interval, int max_buffers);   // 初始化函数，构造AsyncLogging对象，开启后端线程
     static SP_Self GetGlobalLogger();
     void append(const char *logline, int len);  // 供前端调用
     ~AsyncLogging();

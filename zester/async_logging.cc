@@ -1,7 +1,6 @@
 /* 异步日志的核心，定义了FixedBuffer和AsyncLogging */
-#include "zest/common/async_logging.h"
-#include "zest/common/config.h"
-#include "zest/common/util.h"
+#include "zester/async_logging.h"
+#include "zester/util.h"
 #include <stdexcept>
 #include <pthread.h>
 #include <iostream>
@@ -15,16 +14,13 @@ std::shared_ptr<AsyncLogging> g_logger;
 std::shared_ptr<AsyncLogging>  AsyncLogging::GetGlobalLogger() {return g_logger;}
 
 // 初始化函数，构造AsyncLogging对象，开启后端线程
-void AsyncLogging::InitAsyncLogger()
+void AsyncLogging::InitAsyncLogger(const std::string &file_name, const std::string &file_path, 
+                 int max_file_size, int sync_interval, int max_buffers)
 {
     if (g_logger == nullptr) {
-        Config *g_cfg = Config::GetGlobalConfig();
-        if (g_cfg == nullptr)
-            throw std::runtime_error("Global config has not been initialized");
         g_logger.reset(
             new AsyncLogging(
-                g_cfg->log_file_name(), g_cfg->log_file_path(), 
-                g_cfg->log_max_file_size(), g_cfg->log_sync_interval(), g_cfg->log_max_buffers())
+                file_name, file_path, max_file_size, sync_interval, max_buffers)
         );
 
         if (pthread_create(&g_logger->m_tid, NULL, threadFunc, NULL) != 0) {
@@ -74,6 +70,8 @@ AsyncLogging::AsyncLogging(const std::string &file_name, const std::string &file
 AsyncLogging::~AsyncLogging()
 {
     if (m_running || m_tid != 0) {
+        while (!m_running)
+            sleep(1);
         m_running = false;
         m_cond.signal();
         pthread_join(m_tid, NULL);
@@ -131,7 +129,7 @@ void AsyncLogging::backendThreadFunc()
             ScopeMutex mutex(m_mutex);
             cur = m_current_itr;   // 查看当前是否有缓冲区等待刷盘
             if (cur == m_next_to_flush)
-                m_cond.waitForSeconds(m_sync_interval);
+                m_cond.waitForMilliSeconds(m_sync_interval);
             cur = m_current_itr;   // 快照，后续的刷盘到此为止
         }
 

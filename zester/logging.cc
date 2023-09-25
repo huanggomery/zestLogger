@@ -1,8 +1,11 @@
 /* 异步日志的对外接口 */
-#include "zest/common/logging.h"
-#include "zest/common/util.h"
+#include "zester/logging.h"
+#include "zester/util.h"
 #include <unordered_map>
 #include <algorithm>
+#include <sys/stat.h>
+#include <iostream>
+
 
 namespace
 {
@@ -57,11 +60,24 @@ namespace zest
 Logger::LogLevel g_level;
 
 // 供用户代码调用，初始化日志级别和AsyncLogger的配置，启动后端线程
-void Logger::InitGlobalLogger()
+void Logger::InitGlobalLogger(
+        const std::string &loglevel, 
+        const std::string &file_name, 
+        const std::string &file_path, 
+        int max_file_size, 
+        int sync_interval, 
+        int max_buffers
+    )
 {
-    Config *cfg = Config::GetGlobalConfig();
-    g_level = str2loglevel[cfg->log_level()];
-    AsyncLogging::InitAsyncLogger();
+    g_level = str2loglevel[loglevel];
+    // 检查日志文件夹是否存在，不存在的话新建文件夹
+    if (!folderExists(file_path)) {
+        if (mkdir(file_path.c_str(), 0775) != 0) {
+            std::cerr << "Create log file folder failed" << std::endl;
+            exit(-1);
+        }
+    }
+    AsyncLogging::InitAsyncLogger(file_name, file_path, max_file_size, sync_interval, max_buffers);
 }
 
 Logger::Logger(const std::string &basename, int line, LogLevel level)

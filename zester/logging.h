@@ -1,9 +1,8 @@
 /* 异步日志的对外接口 */
 #ifndef ZEST_COMMON_LOGGING_H
 #define ZEST_COMMON_LOGGING_H
-#include "zest/common/async_logging.h"
-#include "zest/common/config.h"
-#include "zest/common/noncopyable.h"
+#include "zester/async_logging.h"
+#include "zester/noncopyable.h"
 
 namespace zest
 {
@@ -23,7 +22,14 @@ public:
     };
 
     // 供用户代码调用，初始化日志级别和AsyncLogger的配置，启动后端线程
-    static void InitGlobalLogger();
+    static void InitGlobalLogger(
+        const std::string &loglevel, 
+        const std::string &file_name, 
+        const std::string &file_path, 
+        int max_file_size, 
+        int sync_interval, 
+        int max_buffers
+    );
 
     Logger() = delete;
     Logger(const std::string &basename, int line, LogLevel level);
