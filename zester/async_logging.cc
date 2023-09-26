@@ -183,7 +183,7 @@ void AsyncLogging::backendThreadFunc()
         }
 
         /* 人为地制造延时，模拟IO较慢的情况，最终编译时必须注释掉，否则将影响性能！*/
-        // sleep(2);
+        // sleep(1);
         // std::cout << m_buffers_n << std::endl;
         /***************************************************************/
 
