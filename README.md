@@ -71,7 +71,7 @@ $ ./zest_single_thread
 
 核心部分就是四个4MB的缓冲区，其中前端两个、后端两个，用户往前端写，前端往后端写，缓冲区满后在前后端之间流动
 
-<img src="/home/huangchen/Project/zestLogger/pics/zest.png" style="zoom: 67%;" />
+<img src="./pics/zest.png" style="zoom: 67%;" />
 
 #### 前端
 
@@ -203,15 +203,15 @@ Logger(__FILE__, __LINE__).stream() << "something ...";
 
 在初始时刻，或者日志写入量较少时，两个指针都指向同一个缓冲区，情况是这样：
 
-<img src="/home/huangchen/Project/zestLogger/pics/buffer_list_empty.png" style="zoom:67%;" />
+<img src="./pics/buffer_list_empty.png" style="zoom:67%;" />
 
 当快速写入多个缓冲区时，情况是这样：
 
-<img src="/home/huangchen/Project/zestLogger/pics/buffer_list_common.png" style="zoom:67%;" />
+<img src="./pics/buffer_list_common.png" style="zoom:67%;" />
 
 当缓冲区用完时，`currentBuffer`指向的缓冲区的下一个缓冲区就是`nextFlush`，此时禁止`currentBuffer`向前移动，情况是这样：
 
-<img src="/home/huangchen/Project/zestLogger/pics/buffer_list_full.png" style="zoom:67%;" />
+<img src="./pics/buffer_list_full.png" style="zoom:67%;" />
 
 #### 自适应动态调整
 
@@ -219,7 +219,7 @@ Logger(__FILE__, __LINE__).stream() << "something ...";
 
 当处于上图所示，缓冲区用完时，需要分配新的缓冲区并插入到`currentBuffer`后面，才能继续移动`currentBuffer`指针，如图所示：
 
-<img src="/home/huangchen/Project/zestLogger/pics/buffer_list_new.png" style="zoom:67%;" />
+<img src="./pics/buffer_list_new.png" style="zoom:67%;" />
 
 ##### 减少缓冲区
 
