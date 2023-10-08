@@ -3,6 +3,7 @@
 #include "zest/Utils.h"
 #include <algorithm>
 #include <unistd.h>
+#include <stdexcept>
 
 namespace {
     void *threadFunction(void *arg)

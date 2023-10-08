@@ -8,6 +8,7 @@
 #include <list>
 #include <string.h>
 #include <memory>
+#include <string>
 
 namespace zest
 {
