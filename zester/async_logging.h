@@ -92,6 +92,7 @@ private:
     /* 线程并发保护 */
     Mutex m_mutex;
     Condition m_cond;
+    Sem m_init_sem;    // 仅用于确保后端线程正确开启
 
     /* 后端线程的启停 */
     pthread_t m_tid;
