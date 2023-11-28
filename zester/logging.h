@@ -18,6 +18,7 @@ public:
         INFO,
         ERROR,
         FATAL,
+        SYNC,
         NUM_LOG_LEVELS
     };
 
@@ -72,9 +73,10 @@ public:
 private:
     void append(const char *data, int len) {m_buffer.append(data, len);}
     Buffer m_buffer;
+    LogLevel m_level;
 };
 
-extern Logger::LogLevel g_level;
+extern zest::Logger::LogLevel g_level;
 
 #define LOG_DEBUG if (zest::g_level <= zest::Logger::DEBUG) \
     zest::Logger(__FILE__, __LINE__, zest::Logger::DEBUG)
@@ -84,6 +86,8 @@ extern Logger::LogLevel g_level;
     zest::Logger(__FILE__, __LINE__, zest::Logger::ERROR)
 #define LOG_FATAL if (zest::g_level <= zest::Logger::FATAL) \
     zest::Logger(__FILE__, __LINE__, zest::Logger::FATAL)
+
+#define LOG_SYNC zest::Logger(__FILE__, __LINE__, zest::Logger::SYNC)
     
 } // namespace zest
 

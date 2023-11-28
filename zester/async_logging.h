@@ -60,6 +60,7 @@ public:
                  int max_file_size, int sync_interval, int max_buffers);   // 初始化函数，构造AsyncLogging对象，开启后端线程
     static SP_Self GetGlobalLogger();
     void append(const char *logline, int len);  // 供前端调用
+    void flush();     // 立刻刷盘（同步）
     ~AsyncLogging();
 
 private:

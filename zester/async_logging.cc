@@ -119,25 +119,45 @@ void AsyncLogging::append(const char *logline, int len)
     }
 }
 
+// 立刻刷盘（同步）
+void AsyncLogging::flush()
+{
+    ScopeMutex mutex(m_mutex);
+    while (m_next_to_flush != m_current_itr) {
+        fwrite((*m_next_to_flush)->data(), 1, (*m_next_to_flush)->size(), m_file);
+        m_cur_file_size += (*m_next_to_flush)->lines();
+        (*m_next_to_flush)->reset();
+        if (++m_next_to_flush == m_buffers.end())
+            m_next_to_flush = m_buffers.begin();
+    }
+    fflush(m_file);
+
+    // 日志文件中记录数太多，创建新的日志文件
+    if (m_cur_file_size >= m_max_file_size) {
+        fclose(m_file);
+        m_file = fopen(get_logfile_name(m_file_name, m_file_path).c_str(), "a");
+        m_cur_file_size = 0;
+    }
+}
+
 // 后端线程函数
 void AsyncLogging::backendThreadFunc()
 {
     do
     {
-        BufferList::iterator cur;
+        BufferList::iterator cur, next_to_flush;
+        bool reduce;
         {
             ScopeMutex mutex(m_mutex);
             cur = m_current_itr;   // 查看当前是否有缓冲区等待刷盘
             if (cur == m_next_to_flush)
                 m_cond.waitForMilliSeconds(m_sync_interval);
-            cur = m_current_itr;   // 快照，后续的刷盘到此为止
-        }
 
-        // 这段代码在临界区外，直接更改m_next_to_flush可能不安全
-        // 所以新定义一个迭代器，作为m_next_to_flush的副本
-        // 仅在当前线程可能更改m_next_to_flush，所以直接读取它是安全的
-        auto next_to_flush = m_next_to_flush;
-        bool reduce = m_buffers_n - calcBufferDistance(next_to_flush, cur) > 2;   // 是否减少缓冲区
+            // 快照，后续的刷盘到此为止
+            cur = m_current_itr;
+            next_to_flush = m_next_to_flush;
+            reduce = m_buffers_n - calcBufferDistance(next_to_flush, cur) > 2;   // 是否减少缓冲区
+        }
         
         // 刷盘
         while (next_to_flush != cur) {
@@ -180,6 +200,7 @@ void AsyncLogging::backendThreadFunc()
         if (m_cur_file_size >= m_max_file_size) {
             fclose(m_file);
             m_file = fopen(get_logfile_name(m_file_name, m_file_path).c_str(), "a");
+            m_cur_file_size = 0;
         }
 
         /* 人为地制造延时，模拟IO较慢的情况，最终编译时必须注释掉，否则将影响性能！*/

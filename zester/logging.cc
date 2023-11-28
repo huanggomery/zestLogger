@@ -80,7 +80,7 @@ void Logger::InitGlobalLogger(
     AsyncLogging::InitAsyncLogger(file_name, file_path, max_file_size, sync_interval, max_buffers);
 }
 
-Logger::Logger(const std::string &basename, int line, LogLevel level)
+Logger::Logger(const std::string &basename, int line, LogLevel level) : m_level(level)
 {
     (*this) << loglevel2str[level] <<'\t' << get_time_str() << '\t'
             << getPid() << ':' << getTid() << '\t'
@@ -91,6 +91,10 @@ Logger::~Logger()
 {
     (*this) << '\n';
     AsyncLogging::GetGlobalLogger()->append(m_buffer.data(), m_buffer.size());
+
+    if (m_level == SYNC) {
+        AsyncLogging::GetGlobalLogger()->flush();
+    }
 }
 
 
