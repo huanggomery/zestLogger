@@ -20,7 +20,8 @@ std::string loglevel2str[] = {
     "DEBUG",
     "INFO",
     "ERROR",
-    "FATAL"
+    "FATAL",
+    "SYNC"
 };
 
 
