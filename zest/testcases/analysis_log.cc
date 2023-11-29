@@ -34,13 +34,20 @@ int main(int argc, char **argv)
 
     for (auto &p : um) {
         bool is_break = false;
+        int first_break_point;
         int last_number = p.second.back();
         for (int i = 1; i < p.second.size(); ++i) {
-            if (p.second[i] != p.second[i-1]+1)
+            if (p.second[i] != p.second[i-1]+1) {
+                if (!is_break)
+                    first_break_point = p.second[i];
                 is_break = true;
+            }
         }
         cout << "thread: " << p.first << " count: " << p.second.size() 
-             << " last_number: " << last_number << " is_break: " << is_break << endl; 
+             << " last_number: " << last_number << " is_break: " << is_break;
+        if (is_break)
+            cout << " first_break_point: " << first_break_point;
+        cout << endl;
     }
 
     ifs.close();

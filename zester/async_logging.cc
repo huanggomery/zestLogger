@@ -122,22 +122,25 @@ void AsyncLogging::append(const char *logline, int len)
 // 立刻刷盘（同步）
 void AsyncLogging::flush()
 {
-    ScopeMutex mutex(m_mutex);
-    while (m_next_to_flush != m_current_itr) {
-        fwrite((*m_next_to_flush)->data(), 1, (*m_next_to_flush)->size(), m_file);
-        m_cur_file_size += (*m_next_to_flush)->lines();
-        (*m_next_to_flush)->reset();
-        if (++m_next_to_flush == m_buffers.end())
-            m_next_to_flush = m_buffers.begin();
-    }
-    fflush(m_file);
+    // FIXME: 只是简单地提醒后端线程刷盘，并没有真正做到同步日志
+    m_cond.signal();
 
-    // 日志文件中记录数太多，创建新的日志文件
-    if (m_cur_file_size >= m_max_file_size) {
-        fclose(m_file);
-        m_file = fopen(get_logfile_name(m_file_name, m_file_path).c_str(), "a");
-        m_cur_file_size = 0;
-    }
+    // ScopeMutex mutex(m_mutex);
+    // while (m_next_to_flush != m_current_itr) {
+    //     fwrite((*m_next_to_flush)->data(), 1, (*m_next_to_flush)->size(), m_file);
+    //     m_cur_file_size += (*m_next_to_flush)->lines();
+    //     (*m_next_to_flush)->reset();
+    //     if (++m_next_to_flush == m_buffers.end())
+    //         m_next_to_flush = m_buffers.begin();
+    // }
+    // fflush(m_file);
+
+    // // 日志文件中记录数太多，创建新的日志文件
+    // if (m_cur_file_size >= m_max_file_size) {
+    //     fclose(m_file);
+    //     m_file = fopen(get_logfile_name(m_file_name, m_file_path).c_str(), "a");
+    //     m_cur_file_size = 0;
+    // }
 }
 
 // 后端线程函数
